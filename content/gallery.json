@@ -1,40 +1,52 @@
 {
   "items": [
     {
-      "image": "/uploads/galeria-cablagem.jpg",
-      "title": "Cablagem de precisão e organização",
-      "description": "Condutores arrumados em calha perfurada, relés, bornes e barramentos organizados.",
-      "category": "cablagem",
-      "date": "2026-10-20",
+      "description_en": "Control system for cattle-slaughtering machinery. Two-hand control and DC motor braking.",
       "published": true,
-      "title_en": "Precision wiring and layout",
+      "date": "2026-11-19",
+      "title_en": " Electrical control panel",
+      "description_es": "Sistema de mando para máquina de sacrificio de ganado. Mando bimanual y frenado de motor en corriente continua.",
+      "title_es": "Cuadro eléctrico de mando",
+      "title": "Quadro elétrico de comando",
+      "image": "/uploads/whatsapp-image-2026-10-20-at-13.44.11-1-.jpeg",
+      "description": "Sistema de comando para máquina de corte de gados. Comando bi-manual e frenagem de motor em corrente contínua.\n",
+      "category": "automacao"
+    },
+    {
       "description_en": "Conductors routed in slotted trunking, relays, terminals and tidy busbars.",
+      "published": true,
+      "date": "2026-10-20",
+      "title_en": "Precision wiring and layout",
+      "description_es": "Conductores ordenados en canaleta ranurada, relés, bornes y embarrados ordenados.",
       "title_es": "Cableado de precisión y orden",
-      "description_es": "Conductores ordenados en canaleta ranurada, relés, bornes y embarrados ordenados."
+      "title": "Cablagem de precisão e organização",
+      "image": "/uploads/galeria-cablagem.jpg",
+      "description": "Condutores arrumados em calha perfurada, relés, bornes e barramentos organizados.",
+      "category": "cablagem"
     },
     {
-      "image": "/uploads/galeria-botoeiras.jpg",
-      "title": "Portas de comando e sinalização",
-      "description": "Botoneiras de arranque e paragem, seletores manual/automático e paragem de emergência identificada.",
-      "category": "automacao",
-      "date": "2026-10-20",
-      "published": true,
-      "title_en": "Control doors and signalling",
       "description_en": "Start/stop push-buttons, manual/auto selectors and a labelled emergency stop.",
+      "published": true,
+      "date": "2026-10-20",
+      "title_en": "Control doors and signalling",
+      "description_es": "Pulsadores de marcha y paro, selectores manual/automático y paro de emergencia identificado.",
       "title_es": "Puertas de mando y señalización",
-      "description_es": "Pulsadores de marcha y paro, selectores manual/automático y paro de emergencia identificado."
+      "title": "Portas de comando e sinalização",
+      "image": "/uploads/galeria-botoeiras.jpg",
+      "description": "Botoneiras de arranque e paragem, seletores manual/automático e paragem de emergência identificada.",
+      "category": "automacao"
     },
     {
-      "image": "/uploads/galeria-solar.jpg",
-      "title": "Sistemas solares e fotovoltaicos",
-      "description": "Montagem em bancada com controladores Phocos, inversor e aparelhagem de proteção ABB.",
-      "category": "solar",
-      "date": "2026-10-20",
-      "published": true,
-      "title_en": "Solar and PV systems",
       "description_en": "Bench assembly with Phocos controllers, inverter and ABB protection devices.",
+      "published": true,
+      "date": "2026-10-20",
+      "title_en": "Solar and PV systems",
+      "description_es": "Montaje en banco con reguladores Phocos, inversor y aparamenta de protección ABB.",
       "title_es": "Sistemas solares y fotovoltaicos",
-      "description_es": "Montaje en banco con reguladores Phocos, inversor y aparamenta de protección ABB."
+      "title": "Sistemas solares e fotovoltaicos",
+      "image": "/uploads/galeria-solar.jpg",
+      "description": "Montagem em bancada com controladores Phocos, inversor e aparelhagem de proteção ABB.",
+      "category": "solar"
     }
   ]
 }
