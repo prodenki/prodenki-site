@@ -149,6 +149,7 @@ def header(lang, alternates, current="home"):
         <li><a class="nav-link" href="{home}#paineis">{e(nav["panels"])}</a></li>
         <li><a class="nav-link" href="{home}#processo">{e(nav["process"])}</a></li>
         <li><a class="nav-link" href="{r["gallery"]}">{e(nav["gallery"])}</a></li>
+        {f'<li><a class="nav-link" href="{r["cases"]}">{e(t["nav_cases"])}</a></li>' if CASES else ""}
         <li><a class="nav-link" href="{home}#faq">{e(nav["faq"])}</a></li>
       </ul>
       <div class="nav-extra">
@@ -199,6 +200,7 @@ def footer(lang, alternates):
       <li><a href="{r["home"]}#processo">{e(t["nav"]["process"])}</a></li>
       <li><a href="{r["home"]}#qualidade">{e(t["nav"]["quality"])}</a></li>
       <li><a href="{r["gallery"]}">{e(t["nav"]["gallery"])}</a></li>
+      {f'<li><a href="{r["cases"]}">{e(t["nav_cases"])}</a></li>' if CASES else ""}
       <li><a href="{r["home"]}#faq">{e(t["nav"]["faq"])}</a></li>
       <li><a href="{r["quote"]}">{e(t["nav"]["quote"])}</a></li>
       {f'<li><a href="{a(SITE["system_url"])}" target="_blank" rel="noopener">{e(t["nav"]["system"])}</a></li>' if SITE.get("system_url") else ""}
@@ -410,17 +412,97 @@ def load_gallery():
         if not src.exists():
             print("  ! foto em falta:", it["image"])
             continue
-        raw = src.read_bytes()
-        name = f'{slugify(src.stem)}-{hashlib.md5(raw).hexdigest()[:6]}'
+        name, w, h = process_photo(src, out_dir)
+        items.append(dict(it, name=name, w=w, h=h, date=str(it.get("date") or "")[:10]))
+    items.sort(key=lambda x: x["date"], reverse=True)
+    return items
+
+
+def process_photo(src, out_dir):
+    """Resizes one uploaded photo (phone photos welcome) into webp/jpg versions; returns (name, w, h)."""
+    from PIL import Image, ImageOps
+    raw = src.read_bytes()
+    name = f'{slugify(src.stem)}-{hashlib.md5(raw).hexdigest()[:6]}'
+    if not (out_dir / f"{name}.jpg").exists():
         im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
         big = im.copy(); big.thumbnail((1400, 1400), Image.LANCZOS)
         big.save(out_dir / f"{name}.webp", quality=78, method=6)
         big.save(out_dir / f"{name}.jpg", quality=80, optimize=True, progressive=True)
         sm = im.copy(); sm.thumbnail((700, 700), Image.LANCZOS)
         sm.save(out_dir / f"{name}-sm.webp", quality=75, method=6)
-        items.append(dict(it, name=name, w=big.width, h=big.height, date=str(it.get("date") or "")[:10]))
+    w, h = Image.open(out_dir / f"{name}.jpg").size
+    return name, w, h
+
+
+CASES = []
+
+
+def load_cases():
+    """Reads content/cases.json (edited in /admin)."""
+    path = ROOT / "content" / "cases.json"
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out_dir = DIST / "assets" / "gallery"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    items = []
+    for it in data.get("items", []):
+        if it.get("published") is False or not it.get("title"):
+            continue
+        it = dict(it, date=str(it.get("date") or "")[:10], name=None)
+        if it.get("image"):
+            src = SRC / it["image"].lstrip("/")
+            if src.exists():
+                it["name"], it["w"], it["h"] = process_photo(src, out_dir)
+            else:
+                print("  ! foto em falta:", it["image"])
+        items.append(it)
     items.sort(key=lambda x: x["date"], reverse=True)
     return items
+
+
+def case_cards(lang, items):
+    t = T[lang]
+    out = []
+    for it in items:
+        title, sector, desc = gtext(it, lang, "title"), gtext(it, lang, "sector"), gtext(it, lang, "description")
+        pic = ""
+        if it.get("name"):
+            n = it["name"]
+            pic = (f'<picture class="case-pic"><source type="image/webp" srcset="/assets/gallery/{n}-sm.webp 700w, /assets/gallery/{n}.webp 1400w" sizes="(max-width: 800px) 100vw, 33vw">'
+                   f'<img src="/assets/gallery/{n}.jpg" alt="{a(title)}" width="{it["w"]}" height="{it["h"]}" loading="lazy" decoding="async"></picture>')
+        metrics = "".join(
+            f'<li><span class="cm-n">{e(str(m.get("value", "")))}</span><span class="cm-l">{e(gtext(m, lang, "label"))}</span></li>'
+            for m in (it.get("results") or [])[:3] if m.get("value"))
+        client = f'<p class="case-client">{e(t["cases_client"])}: {e(it["client"])}</p>' if it.get("client") else ""
+        out.append(f'''
+<article class="case reveal">
+  {pic}
+  <div class="case-body">
+    {f'<p class="case-sector">{e(sector)}</p>' if sector else ""}
+    <h3>{e(title)}</h3>
+    {client}
+    {f"<p>{e(desc)}</p>" if desc else ""}
+    {f'<ul class="case-metrics">{metrics}</ul>' if metrics else ""}
+  </div>
+</article>''')
+    return "".join(out)
+
+
+def cases_section(lang):
+    if not CASES:
+        return ""
+    t = T[lang]
+    more = (f'<div class="g-more reveal"><a class="btn btn-ghost" href="{ROUTES[lang]["cases"]}">{e(t["cases_all_btn"])} {icon("arrow")}</a></div>'
+            if len(CASES) > 3 else "")
+    return f'''
+<section class="sec" id="casos">
+  <div class="wrap">
+    {section_head(t["cases_kicker"], t["cases_title"], t["cases_sub"])}
+    <div class="cases">{case_cards(lang, CASES[:3])}</div>
+    {more}
+  </div>
+</section>'''
 
 
 def gtext(item, lang, field):
@@ -685,6 +767,7 @@ def build_home(lang):
     <ol class="steps" data-steps>{process}</ol>
   </div>
 </section>
+{cases_section(lang)}
 <section class="sec" id="galeria">
   <div class="wrap">
     {section_head(t["gallery_kicker"], t["gallery_title"])}
@@ -880,6 +963,22 @@ def build_gallery(lang):
     return page(lang, r["gallery"], alternates, t["gallery_page_title"], t["gallery_page_desc"], body, [crumb_schema], og_image=og)
 
 
+def build_cases(lang):
+    t = T[lang]
+    r = ROUTES[lang]
+    alternates = {l: ROUTES[l]["cases"] for l in LANGS}
+    crumbs, crumb_schema = breadcrumbs(lang, [(t["cases_kicker"], None)])
+    body = f'''
+{page_hero(lang, t["cases_kicker"], t["cases_title"], t["cases_page_lead"], crumbs)}
+<section class="sec">
+  <div class="wrap"><div class="cases">{case_cards(lang, CASES)}</div></div>
+</section>
+{cta_band(lang)}'''
+    first = next((c for c in CASES if c.get("name")), None)
+    og = f"/assets/gallery/{first['name']}.jpg" if first else "/assets/img/og-image.jpg"
+    return page(lang, r["cases"], alternates, t["cases_page_title"], t["cases_page_desc"], body, [crumb_schema], og_image=og)
+
+
 def build_admin():
     """Decap CMS panel at /admin (login with GitHub). Needs SITE['github_repo']."""
     repo = SITE.get("github_repo")
@@ -907,7 +1006,7 @@ def build_admin():
   repo: {repo}
   branch: main
   commit_messages:
-    update: "Galeria atualizada no painel"
+    update: "Site atualizado no painel"
     uploadMedia: "Nova foto: {{{{path}}}}"
     deleteMedia: "Foto apagada: {{{{path}}}}"
 
@@ -948,6 +1047,47 @@ collections:
               - {{label: "Título (inglês) — opcional", name: title_en, widget: string, required: false}}
               - {{label: "Descrição (inglês) — opcional", name: description_en, widget: text, required: false}}
               - {{label: "Título (espanhol) — opcional", name: title_es, widget: string, required: false}}
+              - {{label: "Descrição (espanhol) — opcional", name: description_es, widget: text, required: false}}
+
+  - name: casos
+    label: Casos de sucesso
+    editor: {{preview: false}}
+    files:
+      - name: casos
+        label: Casos de sucesso
+        file: content/cases.json
+        format: json
+        fields:
+          - label: Casos
+            name: items
+            widget: list
+            add_to_top: true
+            label_singular: caso
+            summary: "{{{{fields.title}}}} — {{{{fields.date}}}}"
+            fields:
+              - {{label: "Título da obra (português)", name: title, widget: string, hint: "Ex.: 11 quadros CCM para linha de extrusão"}}
+              - {{label: "Setor (português)", name: sector, widget: string, required: false, hint: "Ex.: Indústria de plásticos"}}
+              - {{label: "Cliente — deixe vazio se não tiver autorização para o nome", name: client, widget: string, required: false}}
+              - {{label: "Descrição (português)", name: description, widget: text, hint: "O que o cliente precisava, o que a ProDenki fez e o resultado. 3 a 5 frases."}}
+              - label: "Resultados em números (até 3)"
+                name: results
+                widget: list
+                max: 3
+                required: false
+                summary: "{{{{fields.value}}}} {{{{fields.label}}}}"
+                fields:
+                  - {{label: "Número", name: value, widget: string, hint: "Ex.: 11, 22 dias, 1000 kVA"}}
+                  - {{label: "Legenda (português)", name: label, widget: string, hint: "Ex.: quadros entregues"}}
+                  - {{label: "Legenda (inglês) — opcional", name: label_en, widget: string, required: false}}
+                  - {{label: "Legenda (espanhol) — opcional", name: label_es, widget: string, required: false}}
+              - {{label: "Foto", name: image, widget: image, required: false, choose_url: false}}
+              - {{label: "Data", name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "DD/MM/YYYY", time_format: false}}
+              - {{label: "Mostrar no site", name: published, widget: boolean, default: true}}
+              - {{label: "Título (inglês) — opcional", name: title_en, widget: string, required: false}}
+              - {{label: "Setor (inglês) — opcional", name: sector_en, widget: string, required: false}}
+              - {{label: "Descrição (inglês) — opcional", name: description_en, widget: text, required: false}}
+              - {{label: "Título (espanhol) — opcional", name: title_es, widget: string, required: false}}
+              - {{label: "Setor (espanhol) — opcional", name: sector_es, widget: string, required: false}}
               - {{label: "Descrição (espanhol) — opcional", name: description_es, widget: text, required: false}}
 ''', encoding="utf-8")
     return True
@@ -1069,15 +1209,20 @@ def main():
     shutil.copytree(SRC / "assets", DIST / "assets")
     global GALLERY
     GALLERY = load_gallery()
+    global CASES
+    CASES = load_cases()
     pages = 0
     entries = [home_alternates(), {l: ROUTES[l]["services"] for l in LANGS}, {l: ROUTES[l]["quote"] for l in LANGS},
                {l: ROUTES[l]["gallery"] for l in LANGS},
+               *([{l: ROUTES[l]["cases"] for l in LANGS}] if CASES else []),
                {l: ROUTES[l]["privacy"] for l in LANGS}]
     for lang in LANGS:
         write(ROUTES[lang]["home"], build_home(lang)); pages += 1
         write(ROUTES[lang]["services"], build_services_index(lang)); pages += 1
         write(ROUTES[lang]["quote"], build_quote(lang)); pages += 1
         write(ROUTES[lang]["gallery"], build_gallery(lang)); pages += 1
+        if CASES:
+            write(ROUTES[lang]["cases"], build_cases(lang)); pages += 1
         write(ROUTES[lang]["privacy"], build_privacy(lang)); pages += 1
         for s in SERVICES:
             write(svc_url(lang, s), build_service(lang, s)); pages += 1
