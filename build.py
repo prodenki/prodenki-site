@@ -489,6 +489,60 @@ def case_cards(lang, items):
     return "".join(out)
 
 
+TESTIMONIALS = []
+
+
+def load_testimonials():
+    """Reads content/testimonials.json (edited in /admin). Only items with the customer's consent are shown."""
+    path = ROOT / "content" / "testimonials.json"
+    if not path.exists():
+        return []
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out_dir = DIST / "assets" / "gallery"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    items = []
+    for it in data.get("items", []):
+        if it.get("published") is False or not it.get("consent") or not it.get("quote"):
+            continue
+        it = dict(it, date=str(it.get("date") or "")[:10], name_img=None)
+        if it.get("photo"):
+            src = SRC / it["photo"].lstrip("/")
+            if src.exists():
+                it["name_img"], _, _ = process_photo(src, out_dir)
+        items.append(it)
+    items.sort(key=lambda x: x["date"], reverse=True)
+    return items
+
+
+def testimonials_section(lang):
+    if not TESTIMONIALS:
+        return ""
+    t = T[lang]
+    cards = []
+    for it in TESTIMONIALS[:6]:
+        quote = gtext(it, lang, "quote")
+        who = it.get("name") or ""
+        role = gtext(it, lang, "role")
+        org = it.get("company") or gtext(it, lang, "sector")
+        meta = " · ".join(x for x in (role, org) if x)
+        initials = "".join(w[0] for w in (who or org or "P").split()[:2]).upper()
+        avatar = (f'<img src="/assets/gallery/{it["name_img"]}-sm.webp" alt="" width="52" height="52" loading="lazy">'
+                  if it.get("name_img") else f'<span aria-hidden="true">{e(initials)}</span>')
+        cards.append(f'''
+<figure class="testi reveal">
+  <span class="testi-q" aria-hidden="true">“</span>
+  <blockquote><p>{e(quote)}</p></blockquote>
+  <figcaption><span class="testi-av">{avatar}</span><span>{f'<span class="testi-n">{e(who)}</span>' if who else ""}{f'<span class="testi-m">{e(meta)}</span>' if meta else ""}</span></figcaption>
+</figure>''')
+    return f'''
+<section class="sec sec-alt" id="depoimentos">
+  <div class="wrap">
+    {section_head(t["testi_kicker"], t["testi_title"], center=True)}
+    <div class="testis">{"".join(cards)}</div>
+  </div>
+</section>'''
+
+
 def cases_section(lang):
     if not CASES:
         return ""
@@ -768,6 +822,7 @@ def build_home(lang):
   </div>
 </section>
 {cases_section(lang)}
+{testimonials_section(lang)}
 <section class="sec" id="galeria">
   <div class="wrap">
     {section_head(t["gallery_kicker"], t["gallery_title"])}
@@ -1089,6 +1144,38 @@ collections:
               - {{label: "Título (espanhol) — opcional", name: title_es, widget: string, required: false}}
               - {{label: "Setor (espanhol) — opcional", name: sector_es, widget: string, required: false}}
               - {{label: "Descrição (espanhol) — opcional", name: description_es, widget: text, required: false}}
+
+  - name: depoimentos
+    label: Depoimentos
+    editor: {{preview: false}}
+    files:
+      - name: depoimentos
+        label: Depoimentos de clientes
+        file: content/testimonials.json
+        format: json
+        fields:
+          - label: Depoimentos
+            name: items
+            widget: list
+            add_to_top: true
+            label_singular: depoimento
+            summary: "{{{{fields.name}}}} {{{{fields.company}}}} — {{{{fields.date}}}}"
+            fields:
+              - {{label: "Depoimento (português)", name: quote, widget: text, hint: "As palavras do cliente, 2 a 4 frases. Pode corrigir a escrita, mas não o sentido."}}
+              - {{label: "Nome — vazio se o cliente preferir não aparecer", name: name, widget: string, required: false}}
+              - {{label: "Cargo (português)", name: role, widget: string, required: false, hint: "Ex.: Diretor de manutenção"}}
+              - {{label: "Empresa — vazio se não autorizar o nome", name: company, widget: string, required: false}}
+              - {{label: "Setor (português) — usado quando não há empresa", name: sector, widget: string, required: false, hint: "Ex.: Indústria alimentar"}}
+              - {{label: "Foto ou logótipo — opcional", name: photo, widget: image, required: false, choose_url: false}}
+              - {{label: "Data", name: date, widget: datetime, format: "YYYY-MM-DD", date_format: "DD/MM/YYYY", time_format: false}}
+              - {{label: "O cliente autorizou a publicação deste depoimento", name: consent, widget: boolean, default: false, hint: "Obrigatório: sem esta autorização o depoimento não aparece no site."}}
+              - {{label: "Mostrar no site", name: published, widget: boolean, default: true}}
+              - {{label: "Depoimento (inglês) — opcional", name: quote_en, widget: text, required: false}}
+              - {{label: "Cargo (inglês) — opcional", name: role_en, widget: string, required: false}}
+              - {{label: "Setor (inglês) — opcional", name: sector_en, widget: string, required: false}}
+              - {{label: "Depoimento (espanhol) — opcional", name: quote_es, widget: text, required: false}}
+              - {{label: "Cargo (espanhol) — opcional", name: role_es, widget: string, required: false}}
+              - {{label: "Setor (espanhol) — opcional", name: sector_es, widget: string, required: false}}
 ''', encoding="utf-8")
     return True
 
@@ -1211,6 +1298,8 @@ def main():
     GALLERY = load_gallery()
     global CASES
     CASES = load_cases()
+    global TESTIMONIALS
+    TESTIMONIALS = load_testimonials()
     pages = 0
     entries = [home_alternates(), {l: ROUTES[l]["services"] for l in LANGS}, {l: ROUTES[l]["quote"] for l in LANGS},
                {l: ROUTES[l]["gallery"] for l in LANGS},

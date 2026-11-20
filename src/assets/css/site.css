@@ -265,6 +265,20 @@ button { font: inherit; cursor: pointer; }
 .gf.on { background: var(--navy); border-color: var(--navy); color: #fff; }
 .g-item.off { display: none; }
 
+/* Testimonials */
+.testis { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; }
+.testi { flex: 0 1 calc((100% - 44px) / 3); position: relative; margin: 0; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 26px 24px; display: flex; flex-direction: column; }
+.testi-q { display: block; height: 38px; font-family: Georgia, serif; font-size: 4.2rem; line-height: 1; color: var(--orange); opacity: .35; }
+.testi blockquote { margin: 0 0 20px; flex: 1; }
+.testi blockquote p { font-size: 1.02rem; color: var(--ink); margin: 0; position: relative; }
+.testi figcaption { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+.testi-av { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--navy); color: #fff; font-family: var(--ff-head); font-weight: 700; }
+.testi-av img { width: 100%; height: 100%; object-fit: cover; }
+.testi-n { display: block; font-weight: 700; color: var(--ink); }
+.testi-m { display: block; font-size: .86rem; color: var(--muted); }
+@media (max-width: 1060px) { .testi { flex-basis: calc((100% - 22px) / 2); } }
+@media (max-width: 720px) { .testi { flex-basis: 100%; } }
+
 /* Case studies */
 .cases { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
 .case { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; transition: transform .25s var(--ease), box-shadow .25s; }
