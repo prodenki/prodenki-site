@@ -120,7 +120,7 @@ def header(lang, alternates, current="home"):
     r = ROUTES[lang]
     home = r["home"]
     svc_items = "".join(
-        f'<li><a href="{svc_url(lang, s)}">{icon(s["icon"])}<span><strong>{e(s[lang]["name"])}</strong>'
+        f'<li><a href="{svc_url(lang, s)}">{icon(s["icon"])}<span><span class="mg-t">{e(s[lang]["name"])}</span>'
         f'<small>{e(s[lang]["short"])}</small></span></a></li>' for s in SERVICES)
     langs = "".join(
         f'<li><a href="{alternates[l]}" hreflang="{LANG_META[l]["html"]}" lang="{LANG_META[l]["html"]}" '
@@ -187,15 +187,15 @@ def footer(lang, alternates):
 <footer class="ftr">
   <div class="wrap ftr-grid">
     <div class="ftr-brand">
-      <img src="/assets/img/icon-192.png" alt="" width="56" height="56" loading="lazy">
+      <img src="/assets/img/icon-192.png" alt="ProDenki" width="56" height="56" loading="lazy">
       <p class="ftr-name">ProDenki</p>
       <p class="ftr-tag">{e(t["tagline"])}</p>
       <p class="ftr-group">{e(t["group"])}</p>
       <p>{e(t["footer_desc"])}</p>
       {f'<div class="social">{social}</div>' if social else ''}
     </div>
-    <div><h3>{e(t["footer_services"])}</h3><ul class="ftr-links">{svc_links}</ul></div>
-    <div><h3>{e(t["footer_company"])}</h3><ul class="ftr-links">
+    <div><p class="ftr-h">{e(t["footer_services"])}</p><ul class="ftr-links">{svc_links}</ul></div>
+    <div><p class="ftr-h">{e(t["footer_company"])}</p><ul class="ftr-links">
       <li><a href="{r["home"]}#processo">{e(t["nav"]["process"])}</a></li>
       <li><a href="{r["home"]}#qualidade">{e(t["nav"]["quality"])}</a></li>
       <li><a href="{r["gallery"]}">{e(t["nav"]["gallery"])}</a></li>
@@ -203,7 +203,7 @@ def footer(lang, alternates):
       <li><a href="{r["quote"]}">{e(t["nav"]["quote"])}</a></li>
       {f'<li><a href="{a(SITE["system_url"])}" target="_blank" rel="noopener">{e(t["nav"]["system"])}</a></li>' if SITE.get("system_url") else ""}
     </ul></div>
-    <div><h3>{e(t["footer_contact"])}</h3><ul class="ftr-contact">{"".join(contact)}</ul>
+    <div><p class="ftr-h">{e(t["footer_contact"])}</p><ul class="ftr-contact">{"".join(contact)}</ul>
       <a class="btn btn-primary btn-sm" href="{r["quote"]}">{e(t["nav"]["quote"])}</a></div>
   </div>
   <div class="wrap ftr-bottom">
@@ -245,7 +245,7 @@ def lightbox():
 <div class="lb" data-lb hidden role="dialog" aria-modal="true">
   <button class="lb-close" data-lb-close aria-label="Close">''' + icon("close") + '''</button>
   <button class="lb-nav lb-prev" data-lb-prev aria-label="Previous">''' + icon("chevron") + '''</button>
-  <figure class="lb-fig"><img alt="" data-lb-img><figcaption data-lb-cap></figcaption></figure>
+  <figure class="lb-fig"><img alt="ProDenki" data-lb-img><figcaption data-lb-cap></figcaption></figure>
   <button class="lb-nav lb-next" data-lb-next aria-label="Next">''' + icon("chevron") + '''</button>
 </div>'''
 
@@ -442,7 +442,7 @@ def gallery_items(lang, items):
     <span class="g-zoom">{icon("zoom")}</span>
     {f'<span class="g-tag">{e(cat)}</span>' if cat else ""}
   </button>
-  <figcaption><strong>{e(ti)}</strong>{f"<span>{e(d)}</span>" if d else ""}</figcaption>
+  <figcaption><span class="g-t">{e(ti)}</span>{f"<span>{e(d)}</span>" if d else ""}</figcaption>
 </figure>''')
     return "".join(out)
 
@@ -458,11 +458,11 @@ def wizard(lang, preset_mode=None, preset_type=None):
     steps = "".join(f'<li data-step-dot="{i}"><span>{i + 1}</span><em>{e(s)}</em></li>' for i, s in enumerate(w["steps"]))
     modes = "".join(
         f'<label class="opt"><input type="radio" name="modalidade" value="{a(m)}" required{" checked" if preset_mode == i else ""}>'
-        f'<span class="opt-box"><strong>{e(m)}</strong><small>{e(d)}</small></span></label>'
+        f'<span class="opt-box"><span class="opt-t">{e(m)}</span><small>{e(d)}</small></span></label>'
         for i, (m, d) in enumerate(wizard_modes(w)))
     types = "".join(
         f'<label class="opt opt-sm"><input type="radio" name="tipo" value="{a(m + " — " + d)}" required{" checked" if preset_type == i else ""}>'
-        f'<span class="opt-box"><strong>{e(m)}</strong><small>{e(d)}</small></span></label>'
+        f'<span class="opt-box"><span class="opt-t">{e(m)}</span><small>{e(d)}</small></span></label>'
         for i, (m, d) in enumerate(w["types"]))
     deadlines = "".join(f'<option value="{a(d)}">{e(d)}</option>' for d in w["deadlines"])
     docs = "".join(
@@ -513,7 +513,7 @@ def wizard(lang, preset_mode=None, preset_type=None):
   </form>
   <div class="wiz-ok" data-wiz-ok hidden tabindex="-1">
     <div class="ok-ic">{icon("check")}</div>
-    <h3>{e(w["ok_title"])}</h3>
+    <p class="ok-t">{e(w["ok_title"])}</p>
     <p>{e(w["ok_text"])}</p>
     <button type="button" class="btn btn-ghost" data-wiz-again>{e(w["again"])}</button>
   </div>
@@ -552,7 +552,7 @@ def weg_band(lang):
     t = T[lang]
     pts = "".join(f"<li>{icon('check')}{e(x)}</li>" for x in t["weg_points"])
     mode = len(t["wizard"]["modes"]) - 1
-    cta = (f'<a class="btn btn-primary" href="{ROUTES[lang]["quote"]}?m={mode}">{e(t["weg_cta"])} {icon("arrow")}</a>'
+    cta = (f'<a class="btn btn-primary" href="{ROUTES[lang]["quote"]}#m{mode}">{e(t["weg_cta"])} {icon("arrow")}</a>'
            if SITE.get("weg_separate_supply") else "")
     return f'''
 <section class="weg" id="weg">
@@ -602,7 +602,7 @@ def build_home(lang):
   <div class="ppanel-art" aria-hidden="true">{panel_art(p["id"])}</div>
   <div class="ppanel-txt">
     <p class="kicker">{e(p["tab"])}</p>
-    <h3>{e(p["title"])}</h3>
+    <p class="ppanel-h">{e(p["title"])}</p>
     <p>{e(p["desc"])}</p>
     <ul class="ticks">{"".join(f"<li>{icon('check')}{e(x)}</li>" for x in p["points"])}</ul>
     <a class="btn btn-ghost" href="{svc_url(lang, SVC_BY_KEY[p["service"]])}">{e(t["learn_more"])} {icon("arrow")}</a>
@@ -614,7 +614,7 @@ def build_home(lang):
   <span class="model-n">0{i + 1}</span>
   <h3>{e(m["title"])}</h3>
   <p>{e(m["desc"])}</p>
-  <a class="btn btn-ghost btn-sm" href="{r["quote"]}?m={i}" data-pick-mode="{i}">{e(m["cta"])} {icon("arrow")}</a>
+  <a class="btn btn-ghost btn-sm" href="{r["quote"]}#m{i}" data-pick-mode="{i}">{e(m["cta"])} {icon("arrow")}</a>
 </div>''' for i, m in enumerate(t["models"]))
 
     step_icons = ["ruler", "box", "wiring", "test", "send"]
@@ -622,7 +622,7 @@ def build_home(lang):
 <li class="step reveal" style="--i:{i}">
   <span class="step-ic">{icon(step_icons[i])}</span>
   <span class="step-n">{i + 1}</span>
-  <h3>{e(s)}</h3><p>{e(d)}</p>
+  <p class="step-t">{e(s)}</p><p>{e(d)}</p>
 </li>''' for i, (s, d) in enumerate(t["process"]))
 
     gallery = gallery_items(lang, GALLERY[:6])
@@ -651,8 +651,8 @@ def build_home(lang):
     <div class="hero-media">
       <div class="hero-frame" data-tilt>
         {picture("galeria-cablagem", t["gallery"][0][1], "hero-pic", "(max-width: 900px) 100vw, 45vw", eager=True, w=1400, h=1050)}
-        <div class="hero-card c1">{icon("test")}<div><strong>{e(h["card1_t"])}</strong><span>{e(h["card1_d"])}</span></div></div>
-        <div class="hero-card c2">{icon("wiring")}<div><strong>{e(h["card2_t"])}</strong><span>{e(h["card2_d"])}</span></div></div>
+        <div class="hero-card c1">{icon("test")}<div><span class="hc-t">{e(h["card1_t"])}</span><span>{e(h["card1_d"])}</span></div></div>
+        <div class="hero-card c2">{icon("wiring")}<div><span class="hc-t">{e(h["card2_t"])}</span><span>{e(h["card2_d"])}</span></div></div>
       </div>
     </div>
   </div>
@@ -851,7 +851,7 @@ def build_quote(lang):
       {contact_list(lang)}
       <div class="mini-steps">
         <p class="kicker">{e(t["process_kicker"])}</p>
-        <ol>{"".join(f"<li><strong>{e(s)}</strong> {e(d)}</li>" for s, d in t["process"])}</ol>
+        <ol>{"".join(f"<li><span class='ms-t'>{e(s)}</span> {e(d)}</li>" for s, d in t["process"])}</ol>
       </div>
     </div>
   </div>

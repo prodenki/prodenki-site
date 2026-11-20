@@ -22,7 +22,7 @@ T["pt"] = {
             "gallery": "Galeria", "quality": "Qualidade", "faq": "FAQ", "quote": "Pedir orçamento",
             "all_services": "Ver todas as soluções", "menu": "Menu", "close": "Fechar", "language": "Idioma",
             "skip": "Saltar para o conteúdo", "system": "Área reservada"},
-    "home_meta_title": "ProDenki — Quadros Elétricos e Automação Industrial em Portugal",
+    "home_meta_title": "ProDenki | Quadros Elétricos e Automação Industrial",
     "home_meta_desc": "Quadros elétricos e de automação (QGBT, CCM, QCM, QTA), testes de isolamento de motores e relatórios técnicos. Fornecedor oficial WEG. Peça orçamento.",
     "hero": {
         "kicker": "Projetos • Montagem • Cablagem",
@@ -229,7 +229,7 @@ T["en"] = {
             "gallery": "Gallery", "quality": "Quality", "faq": "FAQ", "quote": "Request a quote",
             "all_services": "See all solutions", "menu": "Menu", "close": "Close", "language": "Language",
             "skip": "Skip to content", "system": "Login"},
-    "home_meta_title": "ProDenki — Electrical & Automation Panels Built in Portugal",
+    "home_meta_title": "ProDenki | Electrical and Automation Panels",
     "home_meta_desc": "Electrical and automation panels (main LV, MCC, machine control, ATS), motor insulation testing and technical reports. Official WEG supplier. Get a quote.",
     "hero": {
         "kicker": "Design • Assembly • Wiring",
@@ -433,7 +433,7 @@ T["es"] = {
             "gallery": "Galería", "quality": "Calidad", "faq": "FAQ", "quote": "Pedir presupuesto",
             "all_services": "Ver todas las soluciones", "menu": "Menú", "close": "Cerrar", "language": "Idioma",
             "skip": "Saltar al contenido", "system": "Área privada"},
-    "home_meta_title": "ProDenki — Cuadros Eléctricos y de Automatización en Portugal",
+    "home_meta_title": "ProDenki | Cuadros Eléctricos y de Automatización",
     "home_meta_desc": "Cuadros eléctricos y de automatización (CGBT, CCM, mando de máquinas, conmutación), pruebas de aislamiento de motores e informes técnicos. Proveedor oficial WEG.",
     "hero": {
         "kicker": "Proyecto • Montaje • Cableado",

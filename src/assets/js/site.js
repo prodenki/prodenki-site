@@ -235,7 +235,7 @@
     var back = $("[data-wiz-back]", wiz), next = $("[data-wiz-next]", wiz), submit = $("[data-wiz-submit]", wiz);
     var ok = $("[data-wiz-ok]", wiz), summary = $("[data-wiz-summary]", wiz), idx = 0, started = false;
 
-    var m = new URLSearchParams(location.search).get("m");
+    var hm = /^#m(\d+)$/.exec(location.hash), m = hm ? hm[1] : new URLSearchParams(location.search).get("m");
     if (m !== null) {
       var r = $$('input[name="modalidade"]', form)[parseInt(m, 10)];
       if (r) { r.checked = true; }
