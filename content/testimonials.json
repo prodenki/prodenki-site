@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "consent": false,
+      "consent": true,
       "published": true,
       "quote": "\"Na nossa indústria, o cumprimento rigoroso das normas de segurança e a qualidade da documentação técnica são inegociáveis. Com a Prodenki Automação, passámos a receber esquemas elétricos claros, montagens impecáveis e soluções totalmente em conformidade. É um parceiro em quem confiamos de olhos fechados para projetos críticos.\"",
       "name": "Maria João",
@@ -9,7 +9,7 @@
       "date": "2026-11-16"
     },
     {
-      "consent": false,
+      "consent": true,
       "published": true,
       "quote": "\"Tínhamos máquinas robustas mecanicamente, mas obsoletas a nível elétrico e de controlo. A Prodenki Automação desenhou e executou todo o projeto de modernização, desde a substituição dos quadros elétricos até à nova lógica de automação. Hoje temos equipamentos muito mais seguros, rápidos e fáceis de manter.\"",
       "name": "Manuel",
@@ -17,7 +17,7 @@
       "date": "2026-11-06"
     },
     {
-      "consent": false,
+      "consent": true,
       "published": true,
       "quote": "\"Precisávamos de uma equipa capaz de desenvolver e colocar em marcha um sistema complexo sem comprometer o calendário da nossa fábrica. A Prodenki Automação superou as expectativas na programação e no arranque em obra. O sistema ficou intuitivo para os operadores e extremamente fiável, reduzindo drasticamente as paragens não programadas.\"",
       "name": "Patrícia",
