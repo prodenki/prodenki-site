@@ -1,3 +1,12 @@
 {
-  "items": []
+  "items": [
+    {
+      "consent": true,
+      "published": true,
+      "quote": "\"Antes de trabalhar com a Prodenki Automação, enfrentávamos erros de montagem nos quadros elétricos, problemas com atrasos nas entregas e falhas de dimensionamento, entre outros desafios. Desde que iniciámos esta parceria com a Prodenki, conseguimos não só aumentar a qualidade dos nossos produtos, mas também padronizar os nossos processos e garantir o pleno funcionamento dos nossos projetos. Recomendo vivamente a equipa pelo seu profissionalismo, capacidade técnica e qualidade.\"",
+      "name": "Victor",
+      "role": "Diretor de manutenção",
+      "date": "2026-11-02"
+    }
+  ]
 }
