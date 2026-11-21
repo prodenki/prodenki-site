@@ -51,10 +51,10 @@
       "title_en": "Solar and PV systems",
       "description_es": "Montaje en banco con reguladores Phocos, inversor y aparamenta de protección ABB.",
       "title_es": "Sistemas solares y fotovoltaicos",
-      "title": "Sistemas solares e fotovoltaicos",
+      "title": "QGBT",
       "image": "/uploads/1559177071467.jpg",
-      "description": "Montagem em bancada com controladores Phocos, inversor e aparelhagem de proteção ABB.",
-      "category": "solar"
+      "description": "Quadro geral de distribuição em baixa tensão.",
+      "category": "quadros"
     }
   ]
 }
