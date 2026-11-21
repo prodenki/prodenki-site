@@ -583,7 +583,8 @@ def testimonials_section(lang):
         return ""
     t = T[lang]
     cards = []
-    for it in TESTIMONIALS[:6]:
+    shown = TESTIMONIALS[:12]
+    for i, it in enumerate(shown):
         quote = gtext(it, lang, "quote")
         who = it.get("name") or ""
         role = gtext(it, lang, "role")
@@ -593,16 +594,30 @@ def testimonials_section(lang):
         avatar = (f'<img src="/assets/gallery/{it["name_img"]}-sm.webp" alt="" width="52" height="52" loading="lazy">'
                   if it.get("name_img") else f'<span aria-hidden="true">{e(initials)}</span>')
         cards.append(f'''
-<figure class="testi reveal">
+<li class="testi-slide" role="group" aria-roledescription="slide" aria-label="{i + 1} / {len(shown)}" data-slide>
+<figure class="testi">
   <span class="testi-q" aria-hidden="true">“</span>
-  <blockquote><p>{e(quote)}</p></blockquote>
+  <blockquote><p class="testi-txt" id="testi-{i}" data-clamp>{e(quote)}</p></blockquote>
+  <button type="button" class="testi-more" aria-controls="testi-{i}" aria-expanded="false" data-more hidden>{e(t["testi_more"])}</button>
   <figcaption><span class="testi-av">{avatar}</span><span>{f'<span class="testi-n">{e(who)}</span>' if who else ""}{f'<span class="testi-m">{e(meta)}</span>' if meta else ""}</span></figcaption>
-</figure>''')
+</figure>
+</li>''')
+    dots = "".join(f'<button type="button" class="car-dot" aria-label="{a(t["testi_goto"])} {i + 1}" data-dot="{i}"></button>'
+                   for i in range(len(shown)))
+    controls = (f'''
+    <div class="car-ctrl">
+      <button type="button" class="car-arrow car-prev" aria-label="{a(t["testi_prev"])}" data-prev>{icon("chevron")}</button>
+      <div class="car-dots">{dots}</div>
+      <button type="button" class="car-arrow car-next" aria-label="{a(t["testi_next"])}" data-next>{icon("chevron")}</button>
+    </div>''' if len(shown) > 1 else "")
     return f'''
 <section class="sec sec-alt" id="depoimentos">
   <div class="wrap">
     {section_head(t["testi_kicker"], t["testi_title"], center=True)}
-    <div class="testis">{"".join(cards)}</div>
+    <div class="car reveal" role="region" aria-roledescription="carousel" aria-label="{a(t["testi_title"])}"
+      data-carousel data-more-label="{a(t["testi_more"])}" data-less-label="{a(t["testi_less"])}">
+      <ul class="car-track" data-car-track>{"".join(cards)}</ul>{controls}
+    </div>
   </div>
 </section>'''
 

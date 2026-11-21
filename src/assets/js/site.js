@@ -42,6 +42,74 @@
   $$(".nav a").forEach(function (a) { a.addEventListener("click", function () { setMenu(false); closeMega(); }); });
   window.addEventListener("resize", function () { if (window.innerWidth > 1060) setMenu(false); });
 
+  /* Testimonials carousel ------------------------------------------------- */
+  $$("[data-carousel]").forEach(function (car) {
+    var track = $("[data-car-track]", car), slides = $$("[data-slide]", car), dots = $$("[data-dot]", car);
+    var prev = $("[data-prev]", car), next = $("[data-next]", car);
+    var timer = null, paused = false, DELAY = 5500;
+    if (!track || !slides.length) return;
+
+    // "Read more" only where the text is really cut.
+    function setupMore() {
+      $$("[data-clamp]", car).forEach(function (p) {
+        var btn = p.parentNode.parentNode.querySelector("[data-more]");
+        if (!btn || p.classList.contains("open")) return;
+        btn.hidden = p.scrollHeight <= p.clientHeight + 2;
+      });
+    }
+    $$("[data-more]", car).forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var p = doc.getElementById(btn.getAttribute("aria-controls"));
+        var open = !p.classList.contains("open");
+        p.classList.toggle("open", open);
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        btn.textContent = open ? car.getAttribute("data-less-label") : car.getAttribute("data-more-label");
+        paused = open || car.matches(":hover");
+      });
+    });
+
+    function current() {
+      var x = track.scrollLeft, best = 0, d = Infinity;
+      slides.forEach(function (s, i) { var dd = Math.abs(s.offsetLeft - track.offsetLeft - x); if (dd < d) { d = dd; best = i; } });
+      return best;
+    }
+    function atEnd() { return track.scrollLeft + track.clientWidth >= track.scrollWidth - 4; }
+    function go(i) {
+      if (i < 0) i = slides.length - 1;
+      if (i >= slides.length) i = 0;
+      track.scrollTo({ left: slides[i].offsetLeft - track.offsetLeft, behavior: reduce ? "auto" : "smooth" });
+    }
+    function step(dir) {
+      var i = current();
+      if (dir > 0 && atEnd()) go(0); else if (dir < 0 && i === 0) go(slides.length - 1); else go(i + dir);
+    }
+    function paint() {
+      var i = atEnd() ? slides.length - 1 : current();
+      dots.forEach(function (d, k) { if (k === i) d.setAttribute("aria-current", "true"); else d.removeAttribute("aria-current"); });
+    }
+    var raf;
+    track.addEventListener("scroll", function () { cancelAnimationFrame(raf); raf = requestAnimationFrame(paint); }, { passive: true });
+    if (prev) prev.addEventListener("click", function () { step(-1); restart(); });
+    if (next) next.addEventListener("click", function () { step(1); restart(); });
+    dots.forEach(function (d) { d.addEventListener("click", function () { go(+d.getAttribute("data-dot")); restart(); }); });
+
+    // Plays by itself; pauses on hover, focus or touch; never with reduced motion or when nothing overflows.
+    function tick() { if (!paused && !doc.hidden && track.scrollWidth > track.clientWidth + 4) step(1); }
+    function restart() { if (reduce) return; clearInterval(timer); timer = setInterval(tick, DELAY); }
+    car.addEventListener("mouseenter", function () { paused = true; });
+    car.addEventListener("mouseleave", function () { paused = !!$(".testi-txt.open", car); });
+    car.addEventListener("focusin", function () { paused = true; });
+    car.addEventListener("focusout", function (ev) { if (!car.contains(ev.relatedTarget)) paused = !!$(".testi-txt.open", car); });
+    track.addEventListener("touchstart", function () { paused = true; }, { passive: true });
+    track.addEventListener("touchend", function () { setTimeout(function () { paused = !!$(".testi-txt.open", car); restart(); }, 4000); }, { passive: true });
+
+    setupMore();
+    window.addEventListener("resize", setupMore);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(setupMore);
+    paint();
+    restart();
+  });
+
   /* Mega menu ------------------------------------------------------------ */
   var megaBtn = $("[data-mega-btn]"), mega = $("[data-mega]"), megaTimer;
   function openMega() { if (!mega) return; clearTimeout(megaTimer); mega.classList.add("open"); megaBtn.setAttribute("aria-expanded", "true"); }
