@@ -2,6 +2,14 @@
   "items": [
     {
       "published": true,
+      "image": "/uploads/principais-vantagens-da-barra-de-cobre-para-painel-eletrico.jpg",
+      "title": "Quadro de distribuição",
+      "description": "Quadro de distribuição com barramentos.",
+      "category": "quadros",
+      "date": "2026-11-20"
+    },
+    {
+      "published": true,
       "image": "/uploads/quadro-automacao-plc.jpg",
       "title": "Quadro de Automação com PLC",
       "description": "Solução de Comando e Controlo Industrial com PLC Siemens e HMI",
