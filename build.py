@@ -73,6 +73,7 @@ ICONS = {
     "linkedin": '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/>',
     "facebook": '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
     "instagram": '<rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h0"/>',
+    "ext": '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
     "whatsapp": '<path d="M3 21l1.6-4.8A9 9 0 1 1 8 19.6z"/><path d="M9 9.5c.3 1.6 2 3.8 3.9 4.6l1.2-1.1 2 1c-.2 1-1 1.7-2 1.7-3 0-6.6-3.4-6.6-6.4 0-1 .7-1.8 1.7-2l1 2z"/>',
 }
 
@@ -114,6 +115,37 @@ def tel_href():
     return "tel:" + SITE["phone"].replace(" ", "")
 
 
+def by_setair(lang, white=False, cls="by-setair"):
+    """'by Setair' signature: the parent group's logo, linking to setair.pt in a new tab."""
+    if not SITE.get("setair_url"):
+        return ""
+    f = "setair-logo-white" if white else "setair-logo"
+    return (f'<a class="{cls}" href="{a(SITE["setair_url"])}" target="_blank" rel="noopener" '
+            f'aria-label="{a(T[lang]["setair_aria"])}" data-track="setair_click"><span class="by">by</span>'
+            f'<picture><source srcset="/assets/img/{f}.webp" type="image/webp"><img src="/assets/img/{f}.png" alt="Setair" width="227" height="80"></picture></a>')
+
+
+def weg_link_open(lang, cls):
+    """Opening <a> tag for links to the WEG website (new tab)."""
+    return (f'<a class="{cls}" href="{a(SITE["weg_url"])}" target="_blank" rel="noopener" '
+            f'aria-label="{a(T[lang]["weg_aria"])}" data-track="weg_click">')
+
+
+def topbar(lang):
+    """Slim strip above the header: group line on the left, LinkedIn and 'by Setair' on the right."""
+    t = T[lang]
+    li = (f'<a class="tb-link" href="{a(SITE["linkedin"])}" target="_blank" rel="noopener" aria-label="{a(t["linkedin_aria"])}" '
+          f'data-track="linkedin_click">{icon("linkedin")}<span>LinkedIn</span></a>' if SITE["linkedin"] else "")
+    sep = '<span class="tb-sep" aria-hidden="true"></span>' if li and SITE.get("setair_url") else ""
+    return f'''
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <p class="tb-group">{e(t["group"])}</p>
+    <div class="tb-right">{li}{sep}{by_setair(lang)}</div>
+  </div>
+</div>'''
+
+
 def header(lang, alternates, current="home"):
     t = T[lang]
     nav = t["nav"]
@@ -132,6 +164,7 @@ def header(lang, alternates, current="home"):
              if SITE["phone"] else "")
     return f'''
 <a class="skip" href="#main">{e(nav["skip"])}</a>
+{topbar(lang)}
 <header class="hdr" data-hdr>
   <div class="wrap hdr-in">
     <a class="brand" href="{home}" aria-label="ProDenki — {e(nav["home"])}">
@@ -176,9 +209,18 @@ def footer(lang, alternates):
         contact.append(f'<li>{icon("phone")}<a href="{tel_href()}">{e(SITE["phone"])}</a></li>')
     addr = ", ".join(x for x in [SITE["street"], " ".join(x for x in [SITE["postal_code"], SITE["city"]] if x)] if x)
     contact.append(f'<li>{icon("pin")}<span>{e(addr) if addr else e(t["contact_area_v"])}</span></li>')
+    social_names = {"linkedin": t["linkedin_aria"], "facebook": "Facebook", "instagram": "Instagram"}
     social = "".join(
-        f'<a href="{a(SITE[k])}" target="_blank" rel="noopener" aria-label="{k.title()}">{icon(k)}</a>'
+        f'<a href="{a(SITE[k])}" target="_blank" rel="noopener" aria-label="{a(social_names[k])}" data-track="{k}_click">{icon(k)}</a>'
         for k in ("linkedin", "facebook", "instagram") if SITE[k])
+    partner_items = []
+    if SITE.get("setair_url"):
+        partner_items.append(by_setair(lang, white=True, cls="by-setair by-setair-ftr"))
+    if SITE.get("weg_url"):
+        partner_items.append(weg_link_open(lang, "ftr-weg")
+                             + f'<img src="/assets/img/weg-logo.svg" alt="WEG" width="63" height="44" loading="lazy"><span>{e(t["weg_badge"])}</span></a>')
+    partners = (f'<div class="wrap ftr-partners"><p class="ftr-h">{e(t["partners"])}</p>'
+                f'<div class="ftr-partners-in">{"".join(partner_items)}</div></div>' if partner_items else "")
     langs = " · ".join(
         f'<a href="{alternates[l]}" hreflang="{LANG_META[l]["html"]}"{CUR if l == lang else ""}>{LANG_META[l]["label"]}</a>'
         for l in LANGS)
@@ -208,6 +250,7 @@ def footer(lang, alternates):
     <div><p class="ftr-h">{e(t["footer_contact"])}</p><ul class="ftr-contact">{"".join(contact)}</ul>
       <a class="btn btn-primary btn-sm" href="{r["quote"]}">{e(t["nav"]["quote"])}</a></div>
   </div>
+  {partners}
   <div class="wrap ftr-bottom">
     <p>© {YEAR} {e(SITE["legal_name"])} · {e(t["group"])}. {e(t["rights"])}</p>
     <p class="ftr-legal"><a href="{r["privacy"]}">{e(t["privacy_link"])}</a>{cookie_btn}<span class="ftr-langs">{langs}</span></p>
@@ -267,7 +310,8 @@ def org_schema(lang):
         "email": SITE["email"],
         "areaServed": {"@type": "Country", "name": "Portugal"},
         "knowsLanguage": ["pt", "en", "es"],
-        "parentOrganization": {"@type": "Organization", "name": "Grupo Setair"},
+        "parentOrganization": {"@type": "Organization", "name": "Grupo Setair",
+                               **({"url": SITE["setair_url"]} if SITE.get("setair_url") else {})},
         "address": {"@type": "PostalAddress", "addressCountry": "PT"},
     }
     if SITE["phone"]:
@@ -412,26 +456,43 @@ def load_gallery():
         if not src.exists():
             print("  ! foto em falta:", it["image"])
             continue
-        name, w, h = process_photo(src, out_dir)
+        photo = process_photo(src, out_dir)
+        if not photo:
+            continue
+        name, w, h = photo
         items.append(dict(it, name=name, w=w, h=h, date=str(it.get("date") or "")[:10]))
     items.sort(key=lambda x: x["date"], reverse=True)
     return items
 
 
 def process_photo(src, out_dir):
-    """Resizes one uploaded photo (phone photos welcome) into webp/jpg versions; returns (name, w, h)."""
+    """Resizes one uploaded photo (phone photos welcome) into webp/jpg versions; returns (name, w, h).
+
+    A photo that cannot be read (damaged file, unsupported format...) is reported and skipped
+    (returns None), so one bad upload never stops the whole site from being published.
+    """
     from PIL import Image, ImageOps
-    raw = src.read_bytes()
-    name = f'{slugify(src.stem)}-{hashlib.md5(raw).hexdigest()[:6]}'
-    if not (out_dir / f"{name}.jpg").exists():
-        im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
-        big = im.copy(); big.thumbnail((1400, 1400), Image.LANCZOS)
-        big.save(out_dir / f"{name}.webp", quality=78, method=6)
-        big.save(out_dir / f"{name}.jpg", quality=80, optimize=True, progressive=True)
-        sm = im.copy(); sm.thumbnail((700, 700), Image.LANCZOS)
-        sm.save(out_dir / f"{name}-sm.webp", quality=75, method=6)
-    w, h = Image.open(out_dir / f"{name}.jpg").size
-    return name, w, h
+    name = None
+    try:
+        raw = src.read_bytes()
+        name = f'{slugify(src.stem)}-{hashlib.md5(raw).hexdigest()[:6]}'
+        if not (out_dir / f"{name}.jpg").exists():
+            with Image.open(src) as opened:
+                im = ImageOps.exif_transpose(opened).convert("RGB")
+            big = im.copy(); big.thumbnail((1400, 1400), Image.LANCZOS)
+            big.save(out_dir / f"{name}.webp", quality=78, method=6)
+            big.save(out_dir / f"{name}.jpg", quality=80, optimize=True, progressive=True)
+            sm = im.copy(); sm.thumbnail((700, 700), Image.LANCZOS)
+            sm.save(out_dir / f"{name}-sm.webp", quality=75, method=6)
+        with Image.open(out_dir / f"{name}.jpg") as done:
+            w, h = done.size
+        return name, w, h
+    except Exception as exc:  # noqa: BLE001 - any bad photo must not break the build
+        print(f"  ! AVISO: foto ignorada (não foi possível ler '{src.name}'): {exc}")
+        if name:
+            for suffix in (".webp", ".jpg", "-sm.webp"):
+                (out_dir / f"{name}{suffix}").unlink(missing_ok=True)
+        return None
 
 
 CASES = []
@@ -453,7 +514,9 @@ def load_cases():
         if it.get("image"):
             src = SRC / it["image"].lstrip("/")
             if src.exists():
-                it["name"], it["w"], it["h"] = process_photo(src, out_dir)
+                photo = process_photo(src, out_dir)
+                if photo:
+                    it["name"], it["w"], it["h"] = photo
             else:
                 print("  ! foto em falta:", it["image"])
         items.append(it)
@@ -507,8 +570,9 @@ def load_testimonials():
         it = dict(it, date=str(it.get("date") or "")[:10], name_img=None)
         if it.get("photo"):
             src = SRC / it["photo"].lstrip("/")
-            if src.exists():
-                it["name_img"], _, _ = process_photo(src, out_dir)
+            photo = process_photo(src, out_dir) if src.exists() else None
+            if photo:
+                it["name_img"] = photo[0]
         items.append(it)
     items.sort(key=lambda x: x["date"], reverse=True)
     return items
@@ -693,13 +757,13 @@ def weg_band(lang):
     return f'''
 <section class="weg" id="weg">
   <div class="wrap weg-in reveal">
-    <div class="weg-mark" aria-hidden="true"><img class="weg-logo" src="/assets/img/weg-logo.svg" alt="WEG" width="180" height="126"><span class="weg-badge">{e(t["weg_badge"])}</span></div>
+    {weg_link_open(lang, "weg-mark")}<img class="weg-logo" src="/assets/img/weg-logo.svg" alt="WEG" width="180" height="126"><span class="weg-badge">{e(t["weg_badge"])}</span></a>
     <div class="weg-txt">
       <p class="kicker kicker-light">{e(t["weg_kicker"])}</p>
       <h2>{e(t["weg_title"])}</h2>
       <p>{e(t["weg_text"])}</p>
       <ul class="weg-pts">{pts}</ul>
-      {cta}
+      <div class="weg-actions">{cta}{weg_link_open(lang, "weg-site")}{e(t["weg_link"])} {icon("ext")}</a></div>
     </div>
   </div>
 </section>'''
@@ -708,11 +772,17 @@ def weg_band(lang):
 def brands_strip(lang):
     names = [("abb", "ABB"), ("schneider", "Schneider Electric"), ("siemens", "Siemens"),
              ("weidmuller", "Weidmüller"), ("phoenix-contact", "Phoenix Contact"), ("rittal", "Rittal")]
-    items = '<li><img src="/assets/img/weg-logo.svg" alt="WEG" loading="lazy" height="44" width="63"></li>' + "".join(f'<li><img src="/assets/img/brand-{f}.png" alt="{a(n)}" loading="lazy" height="44"></li>' for f, n in names)
+    others = "".join(f'<li><img src="/assets/img/brand-{f}.png" alt="{a(n)}" loading="lazy" height="44"></li>' for f, n in names)
+    weg = (weg_link_open(lang, "brand-link") + '<img src="/assets/img/weg-logo.svg" alt="WEG" loading="lazy" height="44" width="63"></a>')
+    items = f'<li>{weg}</li>{others}'
+    # Second copy only exists for the endless scroll: hidden from screen readers and keyboard.
+    weg_copy = weg.replace("<a ", '<a tabindex="-1" ', 1)
+    copy = (f'<li aria-hidden="true">{weg_copy}</li>'
+            + others.replace("<li>", '<li aria-hidden="true">'))
     return f'''
 <section class="brands" aria-label="{a(T[lang]["brands_title"])}">
   <div class="wrap"><p class="brands-title">{e(T[lang]["brands_title"])}</p></div>
-  <div class="marquee"><ul class="marquee-track">{items}{items.replace('alt="', 'aria-hidden="true" alt="')}</ul></div>
+  <div class="marquee"><ul class="marquee-track">{items}{copy}</ul></div>
 </section>'''
 
 
@@ -875,6 +945,9 @@ def contact_list(lang):
     if addr:
         items.append(f'<li>{icon("pin")}<div><small>{e(t["contact_address"])}</small><span>{e(addr)}</span></div></li>')
     items.append(f'<li>{icon("globe")}<div><small>{e(t["contact_area"])}</small><span>{e(t["contact_area_v"])}</span></div></li>')
+    if SITE["linkedin"]:
+        items.append(f'<li>{icon("linkedin")}<div><small>LinkedIn</small><a href="{a(SITE["linkedin"])}" target="_blank" rel="noopener" '
+                     f'aria-label="{a(t["linkedin_aria"])}" data-track="linkedin_click">{e(t["linkedin_follow"])}</a></div></li>')
     return f'<ul class="contact-list">{"".join(items)}</ul>'
 
 

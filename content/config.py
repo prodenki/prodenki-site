@@ -20,7 +20,10 @@ SITE = {
     # Link to the company system (button in the header and footer). Empty = no button.
     "system_url": "https://sistema.prodenki.pt/app/",
 
-    "linkedin": "",         # full URL of the LinkedIn company page
+    "linkedin": "https://www.linkedin.com/company/prodenki/",  # LinkedIn company page
+    # Parent group and partner sites (logos link to them, open in a new tab).
+    "setair_url": "https://setair.pt",
+    "weg_url": "https://www.weg.net/institutional/PT/pt/",
     "facebook": "",
     "instagram": "",
 

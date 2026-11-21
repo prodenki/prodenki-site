@@ -33,6 +33,8 @@
   function setMenu(open) {
     if (!burger || !nav) return;
     burger.setAttribute("aria-expanded", open ? "true" : "false");
+    // The top bar scrolls away, so the menu starts right under the header wherever it is now.
+    if (open && hdr) nav.style.setProperty("--nav-top", Math.max(hdr.getBoundingClientRect().bottom, 0) + "px");
     nav.classList.toggle("open", open);
     doc.body.style.overflow = open ? "hidden" : "";
   }
