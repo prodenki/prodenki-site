@@ -32,7 +32,7 @@ T["pt"] = {
     "home_meta_desc": "Quadros elétricos e de automação (QGBT, CCM, QCM, QTA), testes de isolamento de motores e relatórios técnicos. Fornecedor oficial WEG. Peça orçamento.",
     "hero": {
         "kicker": "Projetos • Montagem • Cablagem",
-        "title": "Quadros elétricos e painéis de automação, montados com precisão.",
+        "title": "Quadros elétricos e painéis de automação industrial, montados com precisão.",
         "sub": "Do esquema à entrega ensaiada: QGBT, CCM, quadros de distribuição e de automação para a indústria, o comércio, edifícios, construtores, instaladores e integradores em Portugal.",
         "cta1": "Pedir orçamento", "cta2": "Explorar soluções",
         "chips": ["Fornecedor oficial WEG", "Referenciais RTIEBT / IEC", "Ensaios antes da entrega"],

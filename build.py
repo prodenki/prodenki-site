@@ -9,6 +9,7 @@ import datetime
 import hashlib
 import html
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -100,9 +101,28 @@ def abs_url(path):
 def asset_hash():
     h = hashlib.md5()
     for p in sorted((SRC / "assets").rglob("*")):
-        if p.is_file() and p.suffix in (".css", ".js"):
+        if p.is_file():
+            h.update(p.as_posix().encode())
             h.update(p.read_bytes())
     return h.hexdigest()[:8]
+
+
+FONTS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap"
+
+
+def brand_w(f, h=44):
+    from PIL import Image
+    with Image.open(SRC / "assets" / "img" / f"brand-{f}.png") as im:
+        return round(im.width * h / im.height)
+
+
+# Site-relative image paths inside attributes (src, href, srcset lists); absolute URLs are left alone.
+IMG_REF = re.compile(r'(?<=[\s"])(/assets/img/[\w.-]+\.(?:png|jpe?g|webp|svg|avif))(?=[\s",])')
+
+
+def versioned(html):
+    """Stamp local /assets/img references with the asset hash so they can be cached for a year."""
+    return IMG_REF.sub(lambda m: f"{m.group(1)}?v={VER}", html)
 
 
 VER = None
@@ -373,12 +393,13 @@ def page(lang, path, alternates, title, desc, body, schema=(), og_image="/assets
 <meta property="og:title" content="{a(title)}">
 <meta property="og:description" content="{a(desc)}">
 <meta property="og:image" content="{abs_url(og_image)}">
+<meta property="og:image:alt" content="{a(title)}">
 <meta property="og:locale" content="{LANG_META[lang]["og"]}">
 {og_alt}
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="{FONTS}"><link rel="stylesheet" href="{FONTS}" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="{FONTS}"></noscript>
 <script>document.documentElement.className+=' js'</script>
 <link rel="stylesheet" href="/assets/css/site.css?v={VER}">
 {schemas}
@@ -594,14 +615,14 @@ def testimonials_section(lang):
         avatar = (f'<img src="/assets/gallery/{it["name_img"]}-sm.webp" alt="" width="52" height="52" loading="lazy">'
                   if it.get("name_img") else f'<span aria-hidden="true">{e(initials)}</span>')
         cards.append(f'''
-<li class="testi-slide" role="group" aria-roledescription="slide" aria-label="{i + 1} / {len(shown)}" data-slide>
+<div class="testi-slide" role="group" aria-roledescription="slide" aria-label="{i + 1} / {len(shown)}" data-slide>
 <figure class="testi">
   <span class="testi-q" aria-hidden="true">“</span>
   <blockquote><p class="testi-txt" id="testi-{i}" data-clamp>{e(quote)}</p></blockquote>
   <button type="button" class="testi-more" aria-controls="testi-{i}" aria-expanded="false" data-more hidden>{e(t["testi_more"])}</button>
   <figcaption><span class="testi-av">{avatar}</span><span>{f'<span class="testi-n">{e(who)}</span>' if who else ""}{f'<span class="testi-m">{e(meta)}</span>' if meta else ""}</span></figcaption>
 </figure>
-</li>''')
+</div>''')
     dots = "".join(f'<button type="button" class="car-dot" aria-label="{a(t["testi_goto"])} {i + 1}" data-dot="{i}"></button>'
                    for i in range(len(shown)))
     controls = (f'''
@@ -616,7 +637,7 @@ def testimonials_section(lang):
     {section_head(t["testi_kicker"], t["testi_title"], center=True)}
     <div class="car reveal" role="region" aria-roledescription="carousel" aria-label="{a(t["testi_title"])}"
       data-carousel data-more-label="{a(t["testi_more"])}" data-less-label="{a(t["testi_less"])}">
-      <ul class="car-track" data-car-track>{"".join(cards)}</ul>{controls}
+      <div class="car-track" data-car-track>{"".join(cards)}</div>{controls}
     </div>
   </div>
 </section>'''
@@ -688,7 +709,7 @@ def wizard(lang, preset_mode=None, preset_type=None):
   <div class="wiz-bar"><span data-wiz-bar></span></div>
   <p class="wiz-count" data-wiz-count aria-live="polite"></p>
   <form class="wiz-form" novalidate data-wiz-form>
-    <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
+    <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off" aria-label="botcheck">
     <fieldset class="wiz-step" data-step="0">
       <legend>{e(w["q1"])}</legend>
       <div class="opts">{modes}</div>
@@ -787,7 +808,7 @@ def weg_band(lang):
 def brands_strip(lang):
     names = [("abb", "ABB"), ("schneider", "Schneider Electric"), ("siemens", "Siemens"),
              ("weidmuller", "Weidmüller"), ("phoenix-contact", "Phoenix Contact"), ("rittal", "Rittal")]
-    others = "".join(f'<li><img src="/assets/img/brand-{f}.png" alt="{a(n)}" loading="lazy" height="44"></li>' for f, n in names)
+    others = "".join(f'<li><img src="/assets/img/brand-{f}.png" alt="{a(n)}" loading="lazy" width="{brand_w(f)}" height="44"></li>' for f, n in names)
     weg = (weg_link_open(lang, "brand-link") + '<img src="/assets/img/weg-logo.svg" alt="WEG" loading="lazy" height="44" width="63"></a>')
     items = f'<li>{weg}</li>{others}'
     # Second copy only exists for the endless scroll: hidden from screen readers and keyboard.
@@ -826,16 +847,16 @@ def build_home(lang):
     <p class="ppanel-h">{e(p["title"])}</p>
     <p>{e(p["desc"])}</p>
     <ul class="ticks">{"".join(f"<li>{icon('check')}{e(x)}</li>" for x in p["points"])}</ul>
-    <a class="btn btn-ghost" href="{svc_url(lang, SVC_BY_KEY[p["service"]])}">{e(t["learn_more"])} {icon("arrow")}</a>
+    <a class="btn btn-ghost" href="{svc_url(lang, SVC_BY_KEY[p["service"]])}">{e(t["learn_more"])}<span class="sr-only">: {e(p["title"])}</span> {icon("arrow")}</a>
   </div>
 </div>''' for i, p in enumerate(t["panels"]))
 
     models = "".join(f'''
 <div class="model reveal">
   <span class="model-n">0{i + 1}</span>
-  <h3>{e(m["title"])}</h3>
+  <p class="h3">{e(m["title"])}</p>
   <p>{e(m["desc"])}</p>
-  <a class="btn btn-ghost btn-sm" href="{r["quote"]}#m{i}" data-pick-mode="{i}">{e(m["cta"])} {icon("arrow")}</a>
+  <a class="btn btn-ghost btn-sm" href="{r["quote"]}#m{i}" data-pick-mode="{i}">{e(m["cta"])}<span class="sr-only">: {e(m["title"])}</span> {icon("arrow")}</a>
 </div>''' for i, m in enumerate(t["models"]))
 
     step_icons = ["ruler", "box", "wiring", "test", "send"]
@@ -850,9 +871,9 @@ def build_home(lang):
     more = (f'<div class="g-more reveal"><a class="btn btn-ghost" href="{r["gallery"]}">{e(t["gallery_all_btn"])} {icon("arrow")}</a></div>'
             if len(GALLERY) > 3 else "")
 
-    who = "".join(f'<div class="who-item reveal"><span class="who-ic">{icon(ic)}</span><h3>{e(ti)}</h3><p>{e(d)}</p></div>' for ic, ti, d in t["who"])
+    who = "".join(f'<div class="who-item reveal"><span class="who-ic">{icon(ic)}</span><p class="h3">{e(ti)}</p><p>{e(d)}</p></div>' for ic, ti, d in t["who"])
     q_icons = ["shield", "award", "wiring", "test"]
-    quality = "".join(f'<div class="q-item reveal"><span class="q-ic">{icon(q_icons[i])}</span><h3>{e(ti)}</h3><p>{e(d)}</p></div>' for i, (ti, d) in enumerate(t["quality"]))
+    quality = "".join(f'<div class="q-item reveal"><span class="q-ic">{icon(q_icons[i])}</span><p class="h3">{e(ti)}</p><p>{e(d)}</p></div>' for i, (ti, d) in enumerate(t["quality"]))
 
     body = f'''
 <section class="hero">
@@ -1361,7 +1382,7 @@ def panel_art(kind):
 def write(path, content):
     out = DIST / (path.lstrip("/") + ("index.html" if path.endswith("/") else ""))
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(content, encoding="utf-8")
+    out.write_text(versioned(content), encoding="utf-8")
     return out
 
 
@@ -1405,7 +1426,7 @@ def main():
             write(svc_url(lang, s), build_service(lang, s)); pages += 1
     for s in SERVICES:
         entries.append({l: svc_url(l, s) for l in LANGS})
-    (DIST / "404.html").write_text(build_404(), encoding="utf-8"); pages += 1
+    (DIST / "404.html").write_text(versioned(build_404()), encoding="utf-8"); pages += 1
     (DIST / "sitemap.xml").write_text(sitemap(entries), encoding="utf-8")
     (DIST / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {abs_url('/sitemap.xml')}\n", encoding="utf-8")
     (DIST / "site.webmanifest").write_text(json.dumps({
@@ -1416,7 +1437,7 @@ def main():
     (DIST / "_headers").write_text(
         "/assets/css/*\n  Cache-Control: public, max-age=31536000, immutable\n"
         "/assets/js/*\n  Cache-Control: public, max-age=31536000, immutable\n"
-        "/assets/img/*\n  Cache-Control: public, max-age=604800\n"
+        "/assets/img/*\n  Cache-Control: public, max-age=31536000, immutable\n"
         "/assets/gallery/*\n  Cache-Control: public, max-age=31536000, immutable\n"
         "/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n"
         "  X-Frame-Options: SAMEORIGIN\n  Permissions-Policy: camera=(), microphone=(), geolocation=()\n", encoding="utf-8")
